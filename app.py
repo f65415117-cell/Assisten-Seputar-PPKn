@@ -1,5 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
+from docx import Document
+from io import BytesIO
 
 # 1. Konfigurasi Halaman
 st.set_page_config(page_title="Seputar PPKn AI", layout="centered")
@@ -15,6 +17,15 @@ st.markdown("""
     .stButton>button { width: 100%; background: linear-gradient(to right, #007bff, #0056b3); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
+
+# --- FUNGSI BUAT WORD ---
+def to_word(text):
+    doc = Document()
+    doc.add_heading('Soal Seputar PPKn AI', 0)
+    doc.add_paragraph(text)
+    bio = BytesIO()
+    doc.save(bio)
+    return bio.getvalue()
 
 # --- KONEKSI AI ---
 if "GOOGLE_API_KEY" in st.secrets:
@@ -37,7 +48,6 @@ st.markdown(f"""
 with st.container():
     col1, col2 = st.columns(2)
     with col1:
-        # Pilihan kosong di awal dengan index=0 dan opsi default "Pilih..."
         kelas = st.selectbox("Pilih Kelas", ["Pilih...", "Kelas VII", "Kelas VIII", "Kelas IX"])
     with col2:
         jenis = st.selectbox("Jenis Soal", ["Pilih...", "Pilihan Ganda", "Esai HOTS"])
@@ -46,13 +56,11 @@ with st.container():
     with col3:
         level = st.selectbox("Level Kognitif", ["Pilih...", "C1-C2 (Pemahaman)", "C3-C4 (Aplikasi/Analisis)", "C5-C6 (Evaluasi/Kreasi)"])
     with col4:
-        # Menambahkan kembali jumlah soal
         jumlah = st.number_input("Jumlah Soal", min_value=1, max_value=50, value=5)
         
     materi = st.text_area("Masukkan Materi PPKn:", placeholder="Tempelkan teks materi di sini...", height=150)
     
     if st.button("✨ GENERATE SOAL SEKARANG"):
-        # Validasi agar tidak ada yang kosong
         if kelas == "Pilih..." or jenis == "Pilih..." or level == "Pilih..." or not materi:
             st.warning("Lengkapi semua pilihan dan materi dulu ya, Bro!")
         else:
@@ -60,18 +68,19 @@ with st.container():
                 model = genai.GenerativeModel("gemini-2.5-flash-lite")
                 prompt = f"Anda adalah pakar PPKn. Buatkan {jumlah} soal {jenis} untuk {kelas} dengan level {level}. Sumber materi: {materi}. Berikan kunci jawaban dan pembahasan singkat."
                 
-                with st.spinner("Sedang menyusun soal..."):
+                with st.spinner("Sedang menyusun soal ke Word..."):
                     response = model.generate_content(prompt)
                     hasil_soal = response.text
                     st.markdown("### 📝 Hasil Soal:")
                     st.info(hasil_soal)
                     
-                    # FITUR DOWNLOAD
+                    # FITUR DOWNLOAD WORD
+                    word_file = to_word(hasil_soal)
                     st.download_button(
-                        label="📥 Download Soal (TXT)",
-                        data=hasil_soal,
-                        file_name=f"Soal_PPKn_{kelas}_{jenis}.txt",
-                        mime="text/plain"
+                        label="📥 Download Soal (Word / DOCX)",
+                        data=word_file,
+                        file_name=f"Soal_PPKn_{kelas}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
             except Exception as e:
                 st.error(f"Terjadi kesalahan: {e}")
