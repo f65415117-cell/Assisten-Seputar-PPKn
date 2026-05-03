@@ -82,7 +82,7 @@ with st.container():
         if materi:
             try:
                 # Menggunakan model Gemini Pro yang stabil
-                model = genai.GenerativeModel("gemini-1.5-flash")
+                model = genai.GenerativeModel("gemini-1.5-flash-latest")
                 
                 with st.spinner("Tunggu bentar, AI lagi mikir soal yang pas..."):
                     prompt = (f"Anda adalah Pakar PPKn Digital. Buatlah {jumlah} soal {jenis} "
