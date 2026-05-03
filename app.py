@@ -57,29 +57,32 @@ with st.container():
         level = st.selectbox("Level Kognitif", ["Pilih...", "C1-C2 (Pemahaman)", "C3-C4 (Aplikasi/Analisis)", "C5-C6 (Evaluasi/Kreasi)"])
     with col4:
         jumlah = st.number_input("Jumlah Soal", min_value=1, max_value=50, value=5)
-        
-    materi = st.text_area("Masukkan Materi PPKn:", placeholder="Tempelkan teks materi di sini...", height=150)
+    
+    # PERUBAHAN DI SINI: Label diganti jadi Topik/Bab Pembelajaran
+    topik = st.text_area("Topik/Bab Pembelajaran:", 
+                         placeholder="Contoh: Norma dan Keadilan, Pancasila sebagai Dasar Negara, atau Menjaga Keutuhan Wilayah NKRI...", 
+                         height=100)
     
     if st.button("✨ GENERATE SOAL SEKARANG"):
-        if kelas == "Pilih..." or jenis == "Pilih..." or level == "Pilih..." or not materi:
-            st.warning("Lengkapi semua pilihan dan materi dulu ya, Bro!")
+        if kelas == "Pilih..." or jenis == "Pilih..." or level == "Pilih..." or not topik:
+            st.warning("Lengkapi semua pilihan dan topik pembelajarannya dulu ya, Bro!")
         else:
             try:
                 model = genai.GenerativeModel("gemini-2.5-flash-lite")
-                prompt = f"Anda adalah pakar PPKn. Buatkan {jumlah} soal {jenis} untuk {kelas} dengan level {level}. Sumber materi: {materi}. Berikan kunci jawaban dan pembahasan singkat."
+                # Prompt juga disesuaikan agar AI mencari berdasarkan topik di buku teks
+                prompt = f"Anda adalah pakar PPKn. Buatkan {jumlah} soal {jenis} untuk {kelas} dengan level {level}. Cari materi berdasarkan Topik/Bab: {topik} dari buku teks yang tersedia. Berikan kunci jawaban dan pembahasan singkat."
                 
-                with st.spinner("Sedang menyusun soal ke Word..."):
+                with st.spinner("Sedang menyusun soal..."):
                     response = model.generate_content(prompt)
                     hasil_soal = response.text
                     st.markdown("### 📝 Hasil Soal:")
                     st.info(hasil_soal)
                     
-                    # FITUR DOWNLOAD WORD
                     word_file = to_word(hasil_soal)
                     st.download_button(
                         label="📥 Download Soal (Word / DOCX)",
                         data=word_file,
-                        file_name=f"Soal_PPKn_{kelas}.docx",
+                        file_name=f"Soal_PPKn_{kelas}_{topik}.docx",
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
             except Exception as e:
