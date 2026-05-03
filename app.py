@@ -29,7 +29,7 @@ materi = st.text_area("Masukkan Materi/Teks Buku di Sini:", height=200)
 if st.button("🚀 PROSES SEKARANG"):
     if materi:
         with st.spinner("Sedang menganalisis..."):
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel("gemini-pro")
             prompt = f"Anda adalah Pakar PPKn. Buatkan {jumlah} {tipe} level {level} untuk {fase} berdasarkan materi ini: {materi}"
             response = model.generate_content(prompt)
             st.success("Selesai!")
