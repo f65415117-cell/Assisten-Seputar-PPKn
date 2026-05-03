@@ -7,68 +7,12 @@ st.set_page_config(page_title="Seputar PPKn AI", layout="centered")
 # 2. CSS Custom: Tema Biru Putih Bersih
 st.markdown("""
     <style>
-    /* Background utama putih abu-abu sangat muda agar mata tidak lelah */
-    .stApp {
-        background-color: #f8f9fa;
-    }
-    
-    /* Logo Container */
-    .logo-container {
-        display: flex;
-        justify-content: center;
-        margin-bottom: -25px;
-        position: relative;
-        z-index: 1;
-    }
-    
-    .logo-img {
-        border-radius: 50%;
-        border: 4px solid #007bff; /* Biru Primer */
-        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
-        background-color: white;
-    }
-    
-    /* Header Box Biru Modern */
-    .header-container {
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-        padding: 50px 20px 30px 20px;
-        border-radius: 20px;
-        color: white;
-        text-align: center;
-        margin-bottom: 30px;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    }
-    
-    /* Warna Label Input */
-    label { 
-        color: #333333 !important; 
-        font-weight: bold; 
-    }
-    
-    /* Tombol Generate Biru */
-    .stButton>button {
-        width: 100%;
-        background: linear-gradient(to right, #007bff, #0056b3);
-        color: white;
-        border: none;
-        padding: 16px;
-        border-radius: 12px;
-        font-weight: bold;
-        font-size: 16px;
-        transition: 0.3s ease;
-    }
-    
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
-        background: linear-gradient(to right, #0056b3, #004494);
-    }
-
-    /* Kotak Input */
-    .stTextArea textarea {
-        border-radius: 10px !important;
-        border: 1px solid #dee2e6 !important;
-    }
+    .stApp { background-color: #f8f9fa; }
+    .logo-container { display: flex; justify-content: center; margin-bottom: -25px; position: relative; z-index: 1; }
+    .logo-img { border-radius: 50%; border: 4px solid #007bff; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2); background-color: white; }
+    .header-container { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); padding: 50px 20px 30px 20px; border-radius: 20px; color: white; text-align: center; margin-bottom: 30px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+    label { color: #333333 !important; font-weight: bold; }
+    .stButton>button { width: 100%; background: linear-gradient(to right, #007bff, #0056b3); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -93,27 +37,43 @@ st.markdown(f"""
 with st.container():
     col1, col2 = st.columns(2)
     with col1:
-        kelas = st.selectbox("Pilih Kelas", ["Kelas VII", "Kelas VIII", "Kelas IX"])
+        # Pilihan kosong di awal dengan index=0 dan opsi default "Pilih..."
+        kelas = st.selectbox("Pilih Kelas", ["Pilih...", "Kelas VII", "Kelas VIII", "Kelas IX"])
     with col2:
-        jenis = st.selectbox("Jenis Soal", ["Pilihan Ganda", "Esai HOTS"])
+        jenis = st.selectbox("Jenis Soal", ["Pilih...", "Pilihan Ganda", "Esai HOTS"])
+    
+    col3, col4 = st.columns(2)
+    with col3:
+        level = st.selectbox("Level Kognitif", ["Pilih...", "C1-C2 (Pemahaman)", "C3-C4 (Aplikasi/Analisis)", "C5-C6 (Evaluasi/Kreasi)"])
+    with col4:
+        # Menambahkan kembali jumlah soal
+        jumlah = st.number_input("Jumlah Soal", min_value=1, max_value=50, value=5)
         
-    level = st.selectbox("Level Kognitif", ["C1-C2 (Pemahaman)", "C3-C4 (Aplikasi/Analisis)", "C5-C6 (Evaluasi/Kreasi)"])
-    materi = st.text_area("Masukkan Materi PPKn:", placeholder="Tempelkan teks materi atau ringkasan bab di sini...", height=150)
+    materi = st.text_area("Masukkan Materi PPKn:", placeholder="Tempelkan teks materi di sini...", height=150)
     
     if st.button("✨ GENERATE SOAL SEKARANG"):
-        if materi:
+        # Validasi agar tidak ada yang kosong
+        if kelas == "Pilih..." or jenis == "Pilih..." or level == "Pilih..." or not materi:
+            st.warning("Lengkapi semua pilihan dan materi dulu ya, Bro!")
+        else:
             try:
-                # Memakai model 2.5 Flash-Lite yang sudah terbukti jalan di akunmu
                 model = genai.GenerativeModel("gemini-2.5-flash-lite")
-                prompt = f"Anda adalah pakar PPKn. Buatkan 5 soal {jenis} untuk {kelas} dengan level {level}. Sumber materi: {materi}. Berikan kunci jawaban dan pembahasan singkat."
+                prompt = f"Anda adalah pakar PPKn. Buatkan {jumlah} soal {jenis} untuk {kelas} dengan level {level}. Sumber materi: {materi}. Berikan kunci jawaban dan pembahasan singkat."
                 
                 with st.spinner("Sedang menyusun soal..."):
                     response = model.generate_content(prompt)
+                    hasil_soal = response.text
                     st.markdown("### 📝 Hasil Soal:")
-                    st.info(response.text)
+                    st.info(hasil_soal)
+                    
+                    # FITUR DOWNLOAD
+                    st.download_button(
+                        label="📥 Download Soal (TXT)",
+                        data=hasil_soal,
+                        file_name=f"Soal_PPKn_{kelas}_{jenis}.txt",
+                        mime="text/plain"
+                    )
             except Exception as e:
                 st.error(f"Terjadi kesalahan: {e}")
-        else:
-            st.warning("Silakan masukkan materi terlebih dahulu, Bro.")
 
 st.markdown("<br><p style='text-align: center; color: #6c757d; font-size: 0.8rem;'>© 2026 1MWF Project • Seputar PPKn AI</p>", unsafe_allow_html=True)
