@@ -48,9 +48,13 @@ st.markdown(f"""
 with st.container():
     col1, col2 = st.columns(2)
     with col1:
-        kelas = st.selectbox("Pilih Kelas", ["Pilih...", "Kelas VII", "Kelas VIII", "Kelas IX"])
+        # Update: Menambah pilihan kelas sampai XII
+        list_kelas = ["Pilih...", "Kelas VII", "Kelas VIII", "Kelas IX", "Kelas X", "Kelas XI", "Kelas XII"]
+        kelas = st.selectbox("Pilih Kelas", list_kelas)
     with col2:
-        jenis = st.selectbox("Jenis Soal", ["Pilih...", "Pilihan Ganda", "Esai HOTS"])
+        # Update: Menambah opsi Menjodohkan
+        list_soal = ["Pilih...", "Pilihan Ganda", "Esai HOTS", "Menjodohkan"]
+        jenis = st.selectbox("Jenis Soal", list_soal)
     
     col3, col4 = st.columns(2)
     with col3:
@@ -58,9 +62,8 @@ with st.container():
     with col4:
         jumlah = st.number_input("Jumlah Soal", min_value=1, max_value=50, value=5)
     
-    # PERUBAHAN DI SINI: Label diganti jadi Topik/Bab Pembelajaran
     topik = st.text_area("Topik/Bab Pembelajaran:", 
-                         placeholder="Contoh: Norma dan Keadilan, Pancasila sebagai Dasar Negara, atau Menjaga Keutuhan Wilayah NKRI...", 
+                         placeholder="Contoh: Norma, Pancasila, atau Budaya Taat Hukum...", 
                          height=100)
     
     if st.button("✨ GENERATE SOAL SEKARANG"):
@@ -68,9 +71,14 @@ with st.container():
             st.warning("Lengkapi semua pilihan dan topik pembelajarannya dulu ya, Bro!")
         else:
             try:
+                # Menggunakan model Gemini 2.5 Flash-Lite yang sudah terintegrasi
                 model = genai.GenerativeModel("gemini-2.5-flash-lite")
-                # Prompt juga disesuaikan agar AI mencari berdasarkan topik di buku teks
-                prompt = f"Anda adalah pakar PPKn. Buatkan {jumlah} soal {jenis} untuk {kelas} dengan level {level}. Cari materi berdasarkan Topik/Bab: {topik} dari buku teks yang tersedia. Berikan kunci jawaban dan pembahasan singkat."
+                
+                # Prompt yang disesuaikan untuk menangani jenis soal menjodohkan
+                prompt = f"""Anda adalah pakar PPKn. Buatkan {jumlah} soal {jenis} untuk {kelas} dengan level {level}. 
+                Cari materi berdasarkan Topik/Bab: {topik} dari buku teks yang tersedia. 
+                Jika jenis soal adalah Menjodohkan, buatkan daftar pernyataan dan pilihan jawaban secara terpisah yang harus dipasangkan.
+                Berikan kunci jawaban dan pembahasan singkat."""
                 
                 with st.spinner("Sedang menyusun soal..."):
                     response = model.generate_content(prompt)
