@@ -1,24 +1,4 @@
-import streamlit as st
-import google.generativeai as genai
-from docx import Document
-from io import BytesIO
-import fitz # PyMuPDF
-
-# --- CONFIG ---
-st.set_page_config(page_title="Seputar PPKn AI", layout="centered")
-
-# --- CSS MINIMALIS (ALA RUMAH PENDIDIKAN) ---
-st.markdown("""
-    <style>
-    .stApp { background-color: #ffffff; }
-    .header-minimalis { display: flex; align-items: center; padding: 20px 0px; border-bottom: 1px solid #eaeaea; margin-bottom: 30px; }
-    .logo-img { border-radius: 50%; margin-right: 15px; border: 1px solid #eee; }
-    .title-text { color: #333; font-size: 1.5rem; font-weight: 800; margin: 0; }
-    .subtitle-text { color: #666; font-size: 0.9rem; margin: 0; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- HEADER ---
+# --- HEADER MINIMALIS ---
 st.markdown(f"""
     <div class="header-minimalis">
         <img src="https://yt3.googleusercontent.com/ytc/AIdro_k9jAOBysirU8tWHJ6xT4OQs6OvIBkC7JIjXf5uiUPKuA=s900-c-k-c0x00ffffff-no-rj" class="logo-img" width="50">
@@ -30,21 +10,33 @@ st.markdown(f"""
     """, unsafe_allow_html=True)
 
 # --- FORM INPUT ---
-# Gunakan try-except agar kalau error tidak langsung putih halamannya
-try:
-    with st.container():
-        col1, col2 = st.columns(2)
-        with col1:
-            kelas = st.selectbox("Pilih Kelas", ["Pilih...", "Kelas VII", "Kelas VIII", "Kelas IX", "Kelas X", "Kelas XI", "Kelas XII"])
-        with col2:
-            jenis = st.selectbox("Jenis Soal", ["Pilih...", "Pilihan Ganda", "Esai HOTS", "Menjodohkan"])
-        
-        st.markdown("---")
-        uploaded_file = st.file_uploader("📁 Upload Buku Referensi (PDF)", type="pdf")
-        
-        topik = st.text_area("Topik/Bab Pembelajaran:", placeholder="Contoh: Norma dan Keadilan...")
-        
-        if st.button("🚀 GENERATE SOAL"):
-            st.write("Sedang memproses... (Fitur AI akan muncul di sini)")
-except Exception as e:
-    st.error(f"Ada kendala teknis: {e}")
+with st.container():
+    # Baris 1: Kelas dan Jenis Soal
+    col1, col2 = st.columns(2)
+    with col1:
+        kelas = st.selectbox("Pilih Kelas", ["Pilih...", "Kelas VII", "Kelas VIII", "Kelas IX", "Kelas X", "Kelas XI", "Kelas XII"])
+    with col2:
+        jenis = st.selectbox("Jenis Soal", ["Pilih...", "Pilihan Ganda", "Esai HOTS", "Menjodohkan"])
+    
+    # Baris 2: Upload File (Bahan Baku)
+    st.markdown("---")
+    uploaded_file = st.file_uploader("📁 Upload Buku Referensi (PDF)", type="pdf")
+    
+    # Baris 3: Level Kognitif dan Jumlah Soal (YANG TADI HILANG)
+    st.markdown("---")
+    col3, col4 = st.columns(2)
+    with col3:
+        level = st.selectbox("Level Kognitif", ["Pilih...", "C1-C2 (Pemahaman)", "C3-C4 (Aplikasi/Analisis)", "C5-C6 (Evaluasi/Kreasi)"])
+    with col4:
+        jumlah = st.number_input("Jumlah Soal", min_value=1, max_value=50, value=5)
+    
+    # Baris 4: Topik
+    topik = st.text_area("Topik/Bab Pembelajaran:", placeholder="Contoh: Norma dan Keadilan atau Kedaulatan NKRI...")
+    
+    # TOMBOL GENERATE
+    if st.button("🚀 GENERATE SOAL SEKARANG"):
+        if kelas == "Pilih..." or jenis == "Pilih..." or level == "Pilih..." or not topik:
+            st.warning("Lengkapi semua pilihan dan topik pembelajarannya dulu ya, Bro!")
+        else:
+            # Kode proses AI tetap berlanjut di bawah sini...
+            
