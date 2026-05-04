@@ -39,4 +39,3 @@ with st.container():
             st.warning("Lengkapi semua pilihan dan topik pembelajarannya dulu ya, Bro!")
         else:
             # Kode proses AI tetap berlanjut di bawah sini...
-            
