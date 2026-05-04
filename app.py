@@ -3,97 +3,96 @@ import google.generativeai as genai
 from docx import Document
 from io import BytesIO
 
-# 1. Konfigurasi Halaman
+# 1. KONFIGURASI HALAMAN
 st.set_page_config(page_title="Seputar PPKn AI", layout="centered")
 
-# 2. CSS Custom: Tema Biru Putih Bersih
-st.markdown("""
-    <style>
-    .stApp { background-color: #f8f9fa; }
-    .logo-container { display: flex; justify-content: center; margin-bottom: -25px; position: relative; z-index: 1; }
-    .logo-img { border-radius: 50%; border: 4px solid #007bff; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2); background-color: white; }
-    .header-container { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); padding: 50px 20px 30px 20px; border-radius: 20px; color: white; text-align: center; margin-bottom: 30px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-    label { color: #333333 !important; font-weight: bold; }
-    .stButton>button { width: 100%; background: linear-gradient(to right, #007bff, #0056b3); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- FUNGSI BUAT WORD ---
+# 2. FUNGSI DOWNLOAD WORD
 def to_word(text):
     doc = Document()
-    doc.add_heading('Soal Seputar PPKn AI', 0)
+    doc.add_heading('Hasil Soal - Seputar PPKn AI', 0)
     doc.add_paragraph(text)
     bio = BytesIO()
     doc.save(bio)
     return bio.getvalue()
 
-# --- KONEKSI AI ---
+# 3. CSS MINIMALIS (PERBAIKAN ERROR KURUNG)
+st.markdown("""
+    <style>
+    .stApp { background-color: #ffffff; }
+    .header-minimalis { display: flex; align-items: center; padding: 20px 0px; border-bottom: 1px solid #eaeaea; margin-bottom: 30px; }
+    .logo-img { border-radius: 50%; margin-right: 15px; border: 1px solid #eee; }
+    .title-text { color: #333; font-size: 1.5rem; font-weight: 800; margin: 0; }
+    .subtitle-text { color: #666; font-size: 0.9rem; margin: 0; }
+    .stButton>button { 
+        width: 100%; 
+        background: #007bff; 
+        color: white; 
+        border-radius: 10px; 
+        font-weight: bold; 
+        height: 3em; 
+        border: none; 
+    }
+    .stButton>button:hover { background: #0056b3; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- KONEKSI API ---
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 else:
     st.error("API Key belum terpasang di Secrets!")
 
-# --- TAMPILAN HEADER ---
+# 4. HEADER MINIMALIS
 st.markdown(f"""
-    <div class="logo-container">
-        <img src="https://yt3.googleusercontent.com/ytc/AIdro_k9jAOBysirU8tWHJ6xT4OQs6OvIBkC7JIjXf5uiUPKuA=s900-c-k-c0x00ffffff-no-rj" class="logo-img" width="120">
-    </div>
-    <div class="header-container">
-        <h1 style="margin-top: 20px; font-size: 2.5rem;">Seputar PPKn AI</h1>
-        <p style="font-size: 1.1rem; opacity: 0.9;">Assisten Pembelajaran Digital PPKn</p>
+    <div class="header-minimalis">
+        <img src="https://raw.githubusercontent.com/streamlit/norm-vignette/main/img/sample_profile.png" class="logo-img" width="55">
+        <div>
+            <h1 class="title-text">Seputar PPKn AI</h1>
+            <p class="subtitle-text">Asisten Pembelajaran Digital PPKn</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-# --- FORM INPUT ---
+# 5. FORM INPUT
 with st.container():
     col1, col2 = st.columns(2)
     with col1:
-        # Update: Menambah pilihan kelas sampai XII
-        list_kelas = ["Pilih...", "Kelas VII", "Kelas VIII", "Kelas IX", "Kelas X", "Kelas XI", "Kelas XII"]
-        kelas = st.selectbox("Pilih Kelas", list_kelas)
+        kelas = st.selectbox("1. Pilih Kelas", ["Pilih...", "Kelas VII", "Kelas VIII", "Kelas IX", "Kelas X", "Kelas XI", "Kelas XII"])
     with col2:
-        # Update: Menambah opsi Menjodohkan
-        list_soal = ["Pilih...", "Pilihan Ganda", "Esai HOTS", "Menjodohkan"]
-        jenis = st.selectbox("Jenis Soal", list_soal)
+        jenis = st.selectbox("2. Jenis Soal", ["Pilih...", "Pilihan Ganda", "Esai HOTS", "Menjodohkan"])
     
+    st.markdown("---")
     col3, col4 = st.columns(2)
     with col3:
-        level = st.selectbox("Level Kognitif", ["Pilih...", "C1-C2 (Pemahaman)", "C3-C4 (Aplikasi/Analisis)", "C5-C6 (Evaluasi/Kreasi)"])
+        level = st.selectbox("3. Level Kognitif", ["Pilih...", "C1-C2 (Pemahaman)", "C3-C4 (Aplikasi/Analisis)", "C5-C6 (Evaluasi/Kreasi)"])
     with col4:
-        jumlah = st.number_input("Jumlah Soal", min_value=1, max_value=50, value=5)
+        jumlah = st.number_input("4. Jumlah Soal", 1, 50, 5)
     
-    topik = st.text_area("Topik/Bab Pembelajaran:", 
-                         placeholder="Contoh: Norma, Pancasila, atau Budaya Taat Hukum...", 
-                         height=100)
-    
-    if st.button("✨ GENERATE SOAL SEKARANG"):
-        if kelas == "Pilih..." or jenis == "Pilih..." or level == "Pilih..." or not topik:
-            st.warning("Lengkapi semua pilihan dan topik pembelajarannya dulu ya, Bro!")
+    topik = st.text_area("5. Topik/Bab Pembelajaran Spesifik:", placeholder="Contoh: Norma Masyarakat, Kedaulatan, atau Pancasila...")
+
+    if st.button("🚀 GENERATE SOAL SEKARANG"):
+        if kelas == "Pilih..." or jenis == "Pilih..." or not topik:
+            st.warning("Lengkapi data minimal Kelas, Jenis Soal, dan Topik ya!")
         else:
             try:
-                # Menggunakan model Gemini 2.5 Flash-Lite yang sudah terintegrasi
-                model = genai.GenerativeModel("gemini-2.5-flash-lite")
+                # Pastikan pakai Gemini 2.0 Flash
+                model = genai.GenerativeModel("gemini-2.0-flash")
                 
-                # Prompt yang disesuaikan untuk menangani jenis soal menjodohkan
-                prompt = f"""Anda adalah pakar PPKn. Buatkan {jumlah} soal {jenis} untuk {kelas} dengan level {level}. 
-                Cari materi berdasarkan Topik/Bab: {topik} dari buku teks yang tersedia. 
-                Jika jenis soal adalah Menjodohkan, buatkan daftar pernyataan dan pilihan jawaban secara terpisah yang harus dipasangkan.
-                Berikan kunci jawaban dan pembahasan singkat."""
+                prompt = f"""
+                Bertindaklah sebagai Pakar PPKn Indonesia.
+                Tugas: Buat {jumlah} soal {jenis} kelas {kelas} topik {topik}.
+                Level kognitif: {level}.
                 
-                with st.spinner("Sedang menyusun soal..."):
+                ATURAN FORMAT WAJIB:
+                - Jika Pilihan Ganda, opsi (A, B, C, D) HARUS ditulis berderet ke bawah.
+                - Gunakan standar Kurikulum Merdeka terbaru.
+                - Sertakan kunci jawaban dan pembahasan di bagian akhir.
+                """
+                
+                with st.spinner("Sedang menyusun soal terbaik..."):
                     response = model.generate_content(prompt)
-                    hasil_soal = response.text
                     st.markdown("### 📝 Hasil Soal:")
-                    st.info(hasil_soal)
-                    
-                    word_file = to_word(hasil_soal)
-                    st.download_button(
-                        label="📥 Download Soal (Word / DOCX)",
-                        data=word_file,
-                        file_name=f"Soal_PPKn_{kelas}_{topik}.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    )
+                    st.write(response.text)
+                    st.download_button("📥 Download (Word)", to_word(response.text), f"Soal_{topik}.docx")
             except Exception as e:
-                st.error(f"Terjadi kesalahan: {e}")
-
-st.markdown("<br><p style='text-align: center; color: #6c757d; font-size: 0.8rem;'>© 2026 1MWF Project • Seputar PPKn AI</p>", unsafe_allow_html=True)
+                st.error(f"Terjadi kendala: {e}")
