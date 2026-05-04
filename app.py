@@ -6,16 +6,16 @@ from io import BytesIO
 # 1. KONFIGURASI HALAMAN
 st.set_page_config(page_title="Seputar PPKn AI", layout="centered")
 
-# 2. FUNGSI DOWNLOAD WORD
+# 2. FUNGSI DOWNLOAD WORD (Mendukung Teks Hasil AI)
 def to_word(text):
     doc = Document()
-    doc.add_heading('Hasil Soal - Seputar PPKn AI', 0)
+    doc.add_heading('Hasil Soal & Kisi-kisi - Seputar PPKn AI', 0)
     doc.add_paragraph(text)
     bio = BytesIO()
     doc.save(bio)
     return bio.getvalue()
 
-# 3. CSS MINIMALIS (GAYA RUMAH PENDIDIKAN)
+# 3. CSS MINIMALIS & SIMETRIS (ALA RUMAH PENDIDIKAN)
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
@@ -34,6 +34,8 @@ st.markdown("""
     }
     .title-text { color: #333; font-size: 1.6rem; font-weight: 800; margin: 0; line-height: 1.2; }
     .subtitle-text { color: #666; font-size: 0.95rem; margin: 0; }
+    
+    /* Tombol Biru Gradasi */
     .stButton>button { 
         width: 100%; 
         background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); 
@@ -43,8 +45,12 @@ st.markdown("""
         height: 3.5em; 
         border: none; 
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: 0.3s;
     }
-    .stButton>button:hover { background: #0056b3; }
+    .stButton>button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+    
+    /* Merapikan Jarak Form */
+    [data-testid="stVerticalBlock"] > div { padding-bottom: 0px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -67,7 +73,7 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# 5. FORM INPUT
+# 5. FORM INPUT (VERSI SIMETRIS & RAPAT)
 with st.container():
     col1, col2 = st.columns(2)
     with col1:
@@ -75,37 +81,51 @@ with st.container():
     with col2:
         jenis = st.selectbox("2. Jenis Soal", ["Pilih...", "Pilihan Ganda", "Esai HOTS", "Menjodohkan"])
     
-    st.markdown("---")
     col3, col4 = st.columns(2)
     with col3:
         level = st.selectbox("3. Level Kognitif", ["Pilih...", "C1-C2 (Pemahaman)", "C3-C4 (Aplikasi/Analisis)", "C5-C6 (Evaluasi/Kreasi)"])
     with col4:
         jumlah = st.number_input("4. Jumlah Soal", 1, 50, 5)
     
-    topik = st.text_area("5. Topik/Bab Pembelajaran Spesifik:", placeholder="Contoh: Kedaulatan NKRI, Pancasila, atau Budaya Taat Hukum...")
+    topik = st.text_area("5. Topik, Bab, atau Kisi-kisi Soal:", 
+                         placeholder="Contoh: Kedaulatan NKRI... (Bisa paste kisi-kisi soal di sini agar hasil lebih akurat)",
+                         height=120)
 
-    if st.button("🚀 GENERATE SOAL SEKARANG"):
+    # Tombol Generate
+    st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+    if st.button("🚀 GENERATE SOAL & KISI-KISI"):
         if kelas == "Pilih..." or jenis == "Pilih..." or not topik:
-            st.warning("Data belum lengkap, Bro!")
+            st.warning("Lengkapi data Kelas, Jenis, dan Topik dulu ya, Bro!")
         else:
             try:
-                # MODEL ELITE KITA
+                # MODEL VERSI PILIHANMU
                 model = genai.GenerativeModel("gemini-2.5-flash-lite")
                 
                 prompt = f"""
-                Bertindaklah sebagai Pakar PPKn Indonesia.
-                Buatlah {jumlah} soal {jenis} untuk {kelas} topik {topik} dengan level {level}.
-                
-                ATURAN FORMAT WAJIB:
-                - Jika Pilihan Ganda, opsi (A, B, C, D) HARUS ditulis berderet ke bawah.
-                - Gunakan standar Kurikulum Merdeka terbaru.
-                - Sertakan kunci jawaban dan pembahasan di bagian akhir.
+                Bertindaklah sebagai Pakar Kurikulum PPKn Indonesia.
+                Tugas: Buatlah Kisi-kisi Soal dan daftar soal {jenis} untuk {kelas} dengan materi {topik}.
+                Level kognitif yang diinginkan: {level}.
+
+                STRUKTUR OUTPUT WAJIB:
+                1. TABEL KISI-KISI (No, Lingkup Materi, Indikator Soal, Level, No Soal).
+                2. DAFTAR SOAL (Opsi A, B, C, D HARUS ditulis berderet ke bawah).
+                3. KUNCI JAWABAN DAN PEMBAHASAN.
+
+                Gunakan standar Kurikulum Merdeka terbaru.
                 """
                 
-                with st.spinner("Gemini 2.5 Flash Lite sedang menyusun soal..."):
+                with st.spinner("Gemini 2.5 Flash Lite sedang menyusun administrasi lengkap..."):
                     response = model.generate_content(prompt)
-                    st.markdown("### 📝 Hasil Soal:")
-                    st.write(response.text)
-                    st.download_button("📥 Download (Word)", to_word(response.text), f"Soal_{topik}.docx")
+                    hasil_akhir = response.text
+                    
+                    st.markdown("### 📝 Hasil Analisis:")
+                    st.write(hasil_akhir)
+                    
+                    st.download_button(
+                        label="📥 Download File Word (Soal + Kisi-kisi)",
+                        data=to_word(hasil_akhir),
+                        file_name=f"Administrasi_Soal_{topik}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
             except Exception as e:
                 st.error(f"Terjadi kendala: {e}")
