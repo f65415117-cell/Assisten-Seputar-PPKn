@@ -15,12 +15,18 @@ def to_word(text):
     doc.save(bio)
     return bio.getvalue()
 
-# 3. CSS MINIMALIS (PERBAIKAN ERROR KURUNG)
+# 3. CSS MINIMALIS (ALA RUMAH PENDIDIKAN)
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
-    .header-minimalis { display: flex; align-items: center; padding: 20px 0px; border-bottom: 1px solid #eaeaea; margin-bottom: 30px; }
-    .logo-img { border-radius: 50%; margin-right: 15px; border: 1px solid #eee; }
+    .header-minimalis { 
+        display: flex; 
+        align-items: center; 
+        padding: 20px 0px; 
+        border-bottom: 1px solid #eaeaea; 
+        margin-bottom: 30px; 
+    }
+    .logo-img { border-radius: 50%; margin-right: 15px; border: 1px solid #007bff; }
     .title-text { color: #333; font-size: 1.5rem; font-weight: 800; margin: 0; }
     .subtitle-text { color: #666; font-size: 0.9rem; margin: 0; }
     .stButton>button { 
@@ -68,20 +74,19 @@ with st.container():
     with col4:
         jumlah = st.number_input("4. Jumlah Soal", 1, 50, 5)
     
-    topik = st.text_area("5. Topik/Bab Pembelajaran Spesifik:", placeholder="Contoh: Norma Masyarakat, Kedaulatan, atau Pancasila...")
+    topik = st.text_area("5. Topik/Bab Pembelajaran Spesifik:", placeholder="Contoh: Kedaulatan, Norma, atau Pancasila...")
 
     if st.button("🚀 GENERATE SOAL SEKARANG"):
         if kelas == "Pilih..." or jenis == "Pilih..." or not topik:
-            st.warning("Lengkapi data minimal Kelas, Jenis Soal, dan Topik ya!")
+            st.warning("Lengkapi data dulu, Bro!")
         else:
             try:
-                # Pastikan pakai Gemini 2.0 Flash
-                model = genai.GenerativeModel("gemini-2.0-flash")
+                # PAKAI MODEL 2.5 FLASH LITE SEPERTI REQUES KAMU
+                model = genai.GenerativeModel("gemini-2.5-flash-lite")
                 
                 prompt = f"""
                 Bertindaklah sebagai Pakar PPKn Indonesia.
-                Tugas: Buat {jumlah} soal {jenis} kelas {kelas} topik {topik}.
-                Level kognitif: {level}.
+                Buatlah {jumlah} soal {jenis} untuk {kelas} topik {topik} dengan level {level}.
                 
                 ATURAN FORMAT WAJIB:
                 - Jika Pilihan Ganda, opsi (A, B, C, D) HARUS ditulis berderet ke bawah.
@@ -89,7 +94,7 @@ with st.container():
                 - Sertakan kunci jawaban dan pembahasan di bagian akhir.
                 """
                 
-                with st.spinner("Sedang menyusun soal terbaik..."):
+                with st.spinner("Gemini 2.5 Flash Lite sedang bekerja..."):
                     response = model.generate_content(prompt)
                     st.markdown("### 📝 Hasil Soal:")
                     st.write(response.text)
