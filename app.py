@@ -15,7 +15,7 @@ def to_word(text):
     doc.save(bio)
     return bio.getvalue()
 
-# 3. CSS MODERN (LOGIKA JARAK SIMETRIS)
+# 3. CSS MODERN (JARAK PRESISI & LOGO SPN)
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
@@ -27,8 +27,8 @@ st.markdown("""
     .title-text { color: #333; font-size: 1.6rem; font-weight: 800; margin: 0; }
     .subtitle-text { color: #666; font-size: 0.95rem; margin: 0; }
     
-    /* Merapikan Jarak Baris Form */
-    [data-testid="stVerticalBlock"] > div { padding-bottom: 0px; margin-bottom: -10px; }
+    /* Merapikan Jarak Baris Form Agar Simetris */
+    [data-testid="stVerticalBlock"] > div { padding-bottom: 0px; margin-bottom: -15px; }
     
     .stButton>button { 
         width: 100%; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); 
@@ -43,7 +43,7 @@ if "GOOGLE_API_KEY" in st.secrets:
 else:
     st.error("API Key belum terpasang!")
 
-# 4. HEADER (Logo SPN PPKn)
+# 4. HEADER (Logo SPN PPKn Kamu)
 logo_url = "https://yt3.googleusercontent.com/ytc/AIdro_k9jAOBysirU8tWHJ6xT4OQs6OvIBkC7JIjXf5uiUPKuA=s900-c-k-c0x00ffffff-no-rj"
 
 st.markdown(f"""
@@ -56,11 +56,11 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# 5. FORM INPUT (SIMETRIS)
+# 5. FORM INPUT (KELAS VII-IX SAJA)
 with st.container():
     c1, c2 = st.columns(2)
     with c1:
-        kelas = st.selectbox("1. Pilih Kelas", ["Pilih...", "Kelas VII", "Kelas VIII", "Kelas IX", "Kelas X", "Kelas XI", "Kelas XII"])
+        kelas = st.selectbox("1. Pilih Kelas", ["Pilih...", "Kelas VII", "Kelas VIII", "Kelas IX"])
     with c2:
         jenis = st.selectbox("2. Jenis Soal", ["Pilih...", "Pilihan Ganda", "Esai HOTS", "Menjodohkan"])
     
@@ -70,39 +70,38 @@ with st.container():
     with c4:
         jumlah = st.number_input("4. Jumlah Soal", 1, 50, 5)
     
-    topik = st.text_area("5. Topik, Bab, atau Kisi-kisi Soal:", 
-                         placeholder="Masukkan judul bab atau paste kisi-kisi soal di sini...",
-                         height=120)
+    topik = st.text_area("5. Topik atau Bab Pembelajaran:", 
+                         placeholder="Contoh: Norma Masyarakat, Kedaulatan NKRI, atau Pancasila...",
+                         height=100)
 
     st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
     
-    if st.button("🚀 GENERATE SOAL & ADMINISTRASI"):
+    if st.button("🚀 GENERATE SOAL SEKARANG"):
         if kelas == "Pilih..." or jenis == "Pilih..." or not topik:
-            st.warning("Lengkapi data dulu, Bro!")
+            st.warning("Data belum lengkap, Bro!")
         else:
             try:
-                # MODEL ELITE PILIHANMU
+                # PAKAI MODEL ELITE 2.5 FLASH-LITE
                 model = genai.GenerativeModel("gemini-2.5-flash-lite")
                 
                 prompt = f"""
-                Bertindaklah sebagai Pakar Kurikulum PPKn.
-                Input user: {topik}
+                Bertindaklah sebagai Pakar Kurikulum PPKn Indonesia.
+                Materi: {topik} untuk {kelas}.
                 
-                TUGAS:
-                1. Jika user input KISI-KISI, tampilkan kembali kisi-kisi tersebut dalam TABEL ADMINISTRASI yang rapi dan formal.
-                2. Jika user input JUDUL BAB, buatkan KISI-KISI SOAL yang relevan dalam TABEL ADMINISTRASI.
-                3. Buatkan {jumlah} soal {jenis} untuk {kelas} (level {level}) yang SINKRON dengan kisi-kisi tersebut.
+                TUGAS ANDA:
+                1. Buat TABEL KISI-KISI SOAL (No, Lingkup Materi, Indikator Soal, Level Kognitif, No Soal).
+                2. Buat {jumlah} soal {jenis} level {level} berdasarkan kisi-kisi tersebut.
+                3. Jika Pilihan Ganda, opsi A, B, C, D WAJIB ditulis berderet ke bawah.
+                4. Sertakan KUNCI JAWABAN & PEMBAHASAN.
                 
-                FORMAT HASIL:
-                - TABEL KISI-KISI (No, Lingkup Materi, Indikator Soal, Level, No Soal).
-                - DAFTAR SOAL (Opsi A, B, C, D wajib ke bawah).
-                - KUNCI & PEMBAHASAN.
+                Gunakan bahasa yang santai namun formal sesuai Kurikulum Merdeka.
                 """
                 
-                with st.spinner("Sedang merapikan administrasi..."):
+                with st.spinner("Sedang memproses administrasi dan soal..."):
                     response = model.generate_content(prompt)
-                    st.markdown("### 📋 Hasil Administrasi & Soal:")
+                    st.markdown("### 📋 Hasil:")
                     st.write(response.text)
                     st.download_button("📥 Download (Word)", to_word(response.text), f"Soal_PPKn_{kelas}.docx")
             except Exception as e:
                 st.error(f"Terjadi kendala: {e}")
+                
