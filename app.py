@@ -15,7 +15,7 @@ def to_word(text):
     doc.save(bio)
     return bio.getvalue()
 
-# 3. CSS MINIMALIS (ALA RUMAH PENDIDIKAN)
+# 3. CSS MINIMALIS (GAYA RUMAH PENDIDIKAN)
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
@@ -26,17 +26,23 @@ st.markdown("""
         border-bottom: 1px solid #eaeaea; 
         margin-bottom: 30px; 
     }
-    .logo-img { border-radius: 50%; margin-right: 15px; border: 1px solid #007bff; }
-    .title-text { color: #333; font-size: 1.5rem; font-weight: 800; margin: 0; }
-    .subtitle-text { color: #666; font-size: 0.9rem; margin: 0; }
+    .logo-img { 
+        border-radius: 50%; 
+        margin-right: 15px; 
+        border: 2px solid #007bff; 
+        padding: 2px;
+    }
+    .title-text { color: #333; font-size: 1.6rem; font-weight: 800; margin: 0; line-height: 1.2; }
+    .subtitle-text { color: #666; font-size: 0.95rem; margin: 0; }
     .stButton>button { 
         width: 100%; 
-        background: #007bff; 
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); 
         color: white; 
         border-radius: 10px; 
         font-weight: bold; 
-        height: 3em; 
+        height: 3.5em; 
         border: none; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
     .stButton>button:hover { background: #0056b3; }
     </style>
@@ -48,10 +54,12 @@ if "GOOGLE_API_KEY" in st.secrets:
 else:
     st.error("API Key belum terpasang di Secrets!")
 
-# 4. HEADER MINIMALIS
+# 4. HEADER DENGAN LOGO SPN PPKn
+logo_url = "https://yt3.googleusercontent.com/ytc/AIdro_k9jAOBysirU8tWHJ6xT4OQs6OvIBkC7JIjXf5uiUPKuA=s900-c-k-c0x00ffffff-no-rj"
+
 st.markdown(f"""
     <div class="header-minimalis">
-        <img src="https://raw.githubusercontent.com/streamlit/norm-vignette/main/img/sample_profile.png" class="logo-img" width="55">
+        <img src="{logo_url}" class="logo-img" width="65">
         <div>
             <h1 class="title-text">Seputar PPKn AI</h1>
             <p class="subtitle-text">Asisten Pembelajaran Digital PPKn</p>
@@ -74,14 +82,14 @@ with st.container():
     with col4:
         jumlah = st.number_input("4. Jumlah Soal", 1, 50, 5)
     
-    topik = st.text_area("5. Topik/Bab Pembelajaran Spesifik:", placeholder="Contoh: Kedaulatan, Norma, atau Pancasila...")
+    topik = st.text_area("5. Topik/Bab Pembelajaran Spesifik:", placeholder="Contoh: Kedaulatan NKRI, Pancasila, atau Budaya Taat Hukum...")
 
     if st.button("🚀 GENERATE SOAL SEKARANG"):
         if kelas == "Pilih..." or jenis == "Pilih..." or not topik:
-            st.warning("Lengkapi data dulu, Bro!")
+            st.warning("Data belum lengkap, Bro!")
         else:
             try:
-                # PAKAI MODEL 2.5 FLASH LITE SEPERTI REQUES KAMU
+                # MODEL ELITE KITA
                 model = genai.GenerativeModel("gemini-2.5-flash-lite")
                 
                 prompt = f"""
@@ -94,7 +102,7 @@ with st.container():
                 - Sertakan kunci jawaban dan pembahasan di bagian akhir.
                 """
                 
-                with st.spinner("Gemini 2.5 Flash Lite sedang bekerja..."):
+                with st.spinner("Gemini 2.5 Flash Lite sedang menyusun soal..."):
                     response = model.generate_content(prompt)
                     st.markdown("### 📝 Hasil Soal:")
                     st.write(response.text)
