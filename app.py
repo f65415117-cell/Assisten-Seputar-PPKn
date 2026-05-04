@@ -2,12 +2,12 @@ import streamlit as st
 import google.generativeai as genai
 from docx import Document
 from io import BytesIO
-import fitz  # PyMuPDF untuk baca PDF kilat
+import fitz  # PyMuPDF
 
 # 1. KONFIGURASI HALAMAN
 st.set_page_config(page_title="Seputar PPKn AI", layout="centered")
 
-# 2. FUNGSI EKSTRAK PDF
+# 2. FUNGSI EKSTRAK PDF KILAT
 def extract_pdf_fast(file):
     doc = fitz.open(stream=file.read(), filetype="pdf")
     text = ""
@@ -15,7 +15,7 @@ def extract_pdf_fast(file):
         text += page.get_text()
     return text
 
-# 3. FUNGSI DOWNLOAD WORD
+# 3. FUNGSI BUAT WORD
 def to_word(text):
     doc = Document()
     doc.add_heading('Hasil Soal - Seputar PPKn AI', 0)
@@ -32,17 +32,17 @@ st.markdown("""
     .logo-img { border-radius: 50%; margin-right: 15px; border: 1px solid #eee; }
     .title-text { color: #333; font-size: 1.5rem; font-weight: 800; margin: 0; }
     .subtitle-text { color: #666; font-size: 0.9rem; margin: 0; }
-    .stButton>button { width: 100%; background: #007bff; color: white; border-radius: 10px; font-weight: bold; }
+    .stButton>button { width: 100%; background: #007bff; color: white; border-radius: 10px; font-weight: bold; height: 3em; }
     </style>
     """, unsafe_allow_html=True)
 
-# 5. KONEKSI KE GEMINI
+# --- KONEKSI API ---
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 else:
-    st.error("API Key belum terpasang di Secrets Streamlit!")
+    st.error("API Key belum terpasang di Secrets!")
 
-# 6. HEADER
+# 5. HEADER
 st.markdown(f"""
     <div class="header-minimalis">
         <img src="https://raw.githubusercontent.com/streamlit/norm-vignette/main/img/sample_profile.png" class="logo-img" width="50">
@@ -53,7 +53,7 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# 7. FORM INPUT
+# 6. FORM INPUT (URUTAN TERBAIK)
 with st.container():
     col1, col2 = st.columns(2)
     with col1:
@@ -62,42 +62,45 @@ with st.container():
         jenis = st.selectbox("2. Jenis Soal", ["Pilih...", "Pilihan Ganda", "Esai HOTS", "Menjodohkan"])
     
     st.markdown("---")
-    uploaded_file = st.file_uploader("📁 3. Upload Buku/Modul PDF (Opsional)", type="pdf")
+    # UPLOAD PDF SEBELUM TOPIK
+    uploaded_file = st.file_uploader("📁 3. Upload Buku/Modul Referensi (PDF)", type="pdf")
     
     st.markdown("---")
     col3, col4 = st.columns(2)
     with col3:
-        level = st.selectbox("4. Level Kognitif", ["Pilih...", "C1-C2", "C3-C4", "C5-C6"])
+        level = st.selectbox("4. Level Kognitif", ["Pilih...", "C1-C2 (Pemahaman)", "C3-C4 (Aplikasi/Analisis)", "C5-C6 (Evaluasi/Kreasi)"])
     with col4:
         jumlah = st.number_input("5. Jumlah Soal", 1, 50, 5)
     
-    topik = st.text_area("6. Topik/Bab Pembelajaran:", placeholder="Contoh: Norma dan Keadilan...")
+    topik = st.text_area("6. Topik/Bab Pembelajaran Spesifik:", placeholder="Contoh: Kedaulatan NKRI atau Hak Asasi Manusia...")
 
-    # 8. LOGIKA GENERATE
+    # 7. TOMBOL GENERATE
     if st.button("🚀 GENERATE SOAL SEKARANG"):
         if kelas == "Pilih..." or jenis == "Pilih..." or not topik:
-            st.warning("Data belum lengkap, Bro!")
+            st.warning("Pilih Kelas, Jenis, dan isi Topik dulu, Bro!")
         else:
             try:
-                model = genai.GenerativeModel("gemini-1.5-flash")
+                # UPDATE MODEL KE 2.0 FLASH
+                model = genai.GenerativeModel("gemini-2.0-flash")
                 
-                # Baca PDF jika ada
                 konteks = ""
                 if uploaded_file:
-                    with st.spinner("Membaca PDF tebal..."):
-                        konteks = extract_pdf_fast(uploaded_file)[:30000] # Ambil 30rb karakter pertama
+                    with st.spinner("Membaca data buku..."):
+                        konteks = extract_pdf_fast(uploaded_file)[:50000] # 2.0 Flash sanggup baca lebih banyak
                 
                 prompt = f"""
-                Buatkan {jumlah} soal {jenis} kelas {kelas} tentang {topik}.
-                Level kognitif: {level}.
-                Referensi: {konteks if konteks else 'Kurikulum Merdeka PPKn terbaru'}.
+                Bertindaklah sebagai Pakar PPKn Indonesia.
+                Buatlah {jumlah} soal {jenis} kelas {kelas} tentang {topik} dengan level kognitif {level}.
+                
+                REFERENSI MATERI:
+                {konteks if konteks else 'Gunakan standar Kurikulum Merdeka PPKn terbaru.'}
                 
                 ATURAN FORMAT:
-                - Opsi jawaban (A, B, C, D) HARUS berderet ke bawah.
-                - Berikan kunci jawaban dan pembahasan di akhir.
+                - Jika Pilihan Ganda, opsi A, B, C, D HARUS ditulis berderet ke bawah.
+                - Sertakan kunci jawaban dan pembahasan logis di akhir.
                 """
                 
-                with st.spinner("Gemini lagi mikir..."):
+                with st.spinner("Gemini 2.0 Flash lagi bekerja..."):
                     response = model.generate_content(prompt)
                     st.markdown("### 📝 Hasil Soal:")
                     st.write(response.text)
